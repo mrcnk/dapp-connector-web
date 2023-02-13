@@ -1,31 +1,31 @@
-import * as CardanoWasm from "@emurgo/cardano-serialization-lib-browser"
-import axios from "axios"
-import { textPartFromWalletChecksumImagePart } from "@emurgo/cip4-js"
-import { createIcon } from "@download/blockies"
-import { getTtl, utxoJSONToTransactionInput } from './utils'
-import { bytesToHex, hexToBytes } from './coreUtils';
-import { Buffer } from "buffer"
+import * as CardanoWasm from "@emurgo/cardano-serialization-lib-browser";
+import axios from "axios";
+import { textPartFromWalletChecksumImagePart } from "@emurgo/cip4-js";
+import { createIcon } from "@download/blockies";
+import { getTtl, utxoJSONToTransactionInput } from "./utils";
+import { bytesToHex, hexToBytes } from "./coreUtils";
+import { Buffer } from "buffer";
 
-const cardanoAccessBtnRow = document.querySelector('#request-button-row')
-const cardanoAuthCheck = document.querySelector('#check-identification')
-const cardanoAccessBtn = document.querySelector('#request-access')
-const connectionStatus = document.querySelector('#connection-status')
-const walletPlateSpan = document.querySelector('#wallet-plate')
-const walletIconSpan = document.querySelector('#wallet-icon')
-const getUnUsedAddresses = document.querySelector('#get-unused-addresses')
-const getUsedAddresses = document.querySelector('#get-used-addresses')
-const getChangeAddress = document.querySelector('#get-change-address')
-const getRewardAddresses = document.querySelector('#get-reward-addresses')
-const getAccountBalance = document.querySelector('#get-balance')
-const isEnabledBtn = document.querySelector('#is-enabled')
-const getUtxos = document.querySelector('#get-utxos')
-const submitTx = document.querySelector('#submit-tx')
-const signTx = document.querySelector('#sign-tx')
-const createTx = document.querySelector('#create-tx')
-const getCollateralUtxos = document.querySelector('#get-collateral-utxos')
-const signData = document.querySelector('#sign-data')
-const alertEl = document.querySelector('#alert')
-const spinner = document.querySelector('#spinner')
+const cardanoAccessBtnRow = document.querySelector("#request-button-row");
+const cardanoAuthCheck = document.querySelector("#check-identification");
+const cardanoAccessBtn = document.querySelector("#request-access");
+const connectionStatus = document.querySelector("#connection-status");
+const walletPlateSpan = document.querySelector("#wallet-plate");
+const walletIconSpan = document.querySelector("#wallet-icon");
+const getUnUsedAddresses = document.querySelector("#get-unused-addresses");
+const getUsedAddresses = document.querySelector("#get-used-addresses");
+const getChangeAddress = document.querySelector("#get-change-address");
+const getRewardAddresses = document.querySelector("#get-reward-addresses");
+const getAccountBalance = document.querySelector("#get-balance");
+const isEnabledBtn = document.querySelector("#is-enabled");
+const getUtxos = document.querySelector("#get-utxos");
+const submitTx = document.querySelector("#submit-tx");
+const signTx = document.querySelector("#sign-tx");
+const createTx = document.querySelector("#create-tx");
+const getCollateralUtxos = document.querySelector("#get-collateral-utxos");
+const signData = document.querySelector("#sign-data");
+const alertEl = document.querySelector("#alert");
+const spinner = document.querySelector("#spinner");
 
 // NFT Buttons
 const mintNFT = document.querySelector("#mint-NFT");
@@ -56,14 +56,14 @@ let unsignedTransactionHex;
 let transactionHex;
 
 let plutusInfo = {
-  "utxo_id": "",
-  "tx_hash": "",
-  "tx_index": "0",
-  "receiver": "addr_test1wpl95paxq4ym8324kgxlnseefr9rpz85962z9jhr2g08yksxa9tge",
-  "amount": "",
-  "assets": [],
-  "datum": null
-}
+  utxo_id: "",
+  tx_hash: "",
+  tx_index: "0",
+  receiver: "addr_test1wpl95paxq4ym8324kgxlnseefr9rpz85962z9jhr2g08yksxa9tge",
+  amount: "",
+  assets: [],
+  datum: null,
+};
 
 function isCBOR() {
   return returnType === "cbor";
@@ -97,9 +97,7 @@ function onApiConnectied(api) {
   toggleSpinner("hide");
   let walletDisplay = "an anonymous Yoroi Wallet";
 
-  api.experimental.setReturnType(returnType);
-
-  const auth = api.experimental.auth && api.experimental.auth();
+  const auth = api.auth && api.auth();
   const authEnabled = auth && auth.isEnabled();
 
   if (authEnabled) {
@@ -119,13 +117,6 @@ function onApiConnectied(api) {
   toggleConnectionUI("status");
   accessGranted = true;
   window.cardanoApi = cardanoApi = api;
-
-  api.experimental.onDisconnect(() => {
-    alertWarrning(`Disconnected from ${walletDisplay}`);
-    toggleConnectionUI("button");
-    walletPlateSpan.innerHTML = "";
-    walletIconSpan.innerHTML = "";
-  });
 
   if (authEnabled) {
     console.log("Testing auth signatures");
@@ -166,9 +157,11 @@ function onApiConnectied(api) {
   // while getNetworkId() has not yet been implemented
   cardanoApi.getChangeAddress().then(function (address) {
     if (addressesFromCborIfNeeded([address])[0].slice(0, 9) != "addr_test") {
-      alert("Non testnet wallet detected, demo app was built for testnet, functions will not work as intended, funds are at risk, please disonnect wallet and reconnect")
+      alert(
+        "Non testnet wallet detected, demo app was built for testnet, functions will not work as intended, funds are at risk, please disonnect wallet and reconnect"
+      );
     }
-  })
+  });
 }
 
 function reduceWasmMultiasset(multiasset, reducer, initValue) {
@@ -200,7 +193,7 @@ cardanoAccessBtn.addEventListener("click", () => {
   toggleSpinner("show");
   const requestIdentification = cardanoAuthCheck.checked;
 
-  cardano.yoroi.enable({ requestIdentification }).then(
+  cardano.lace.enable({ requestIdentification }).then(
     function (api) {
       onApiConnectied(api);
     },
@@ -212,7 +205,7 @@ cardanoAccessBtn.addEventListener("click", () => {
 });
 
 isEnabledBtn.addEventListener("click", () => {
-  window.cardano.yoroi.isEnabled().then(function (isEnabled) {
+  window.cardano.lace.isEnabled().then(function (isEnabled) {
     alertSuccess(`Is Yoroi connection enabled: ${isEnabled}`);
   });
 });
@@ -251,10 +244,9 @@ getAccountBalance.addEventListener("click", () => {
 
 function addressesFromCborIfNeeded(addresses) {
   return isCBOR()
-    ? addresses.map(
-      (a) =>
+    ? addresses.map((a) =>
         CardanoWasm.Address.from_bytes(hexToBytes(a)).to_bech32()
-    )
+      )
     : addresses;
 }
 
@@ -296,7 +288,7 @@ getUsedAddresses.addEventListener("click", () => {
           alertWarrning("No used addresses");
           return;
         }
-        usedAddresses = addressesFromCborIfNeeded(addresses)
+        usedAddresses = addressesFromCborIfNeeded(addresses);
         alertSuccess(`Address: ${usedAddresses.concat(",")}`);
         alertEl.innerHTML =
           "<h2>Used addresses:</h2><pre>" +
@@ -317,9 +309,12 @@ getChangeAddress.addEventListener("click", () => {
         alertWarrning("No change addresses");
         return;
       }
-      changeAddress = addressesFromCborIfNeeded([address])[0]
-      alertSuccess(`Address: `)
-      alertEl.innerHTML = '<h2>Change address:</h2><pre>' + JSON.stringify(changeAddress, undefined, 2) + '</pre>'
+      changeAddress = addressesFromCborIfNeeded([address])[0];
+      alertSuccess(`Address: `);
+      alertEl.innerHTML =
+        "<h2>Change address:</h2><pre>" +
+        JSON.stringify(changeAddress, undefined, 2) +
+        "</pre>";
     });
   }
 });
@@ -419,8 +414,8 @@ window._getUtxos = function (value) {
       utxos = isCBOR() ? mapCborUtxos(utxosResponse) : utxosResponse;
       alertSuccess(
         `<h2>UTxO (${utxos.length}):</h2><pre>` +
-        JSON.stringify(utxos, undefined, 2) +
-        "</pre>"
+          JSON.stringify(utxos, undefined, 2) +
+          "</pre>"
       );
     }
   });
@@ -474,16 +469,22 @@ signTx.addEventListener("click", async () => {
   }
 
   if (!unsignedTransactionHex) {
-    const txBuilder = getTxBuilder()
+    const txBuilder = getTxBuilder();
 
     // get utxos selected for 2 ADA
-    let hexInputUtxos = await cardanoApi.getUtxos("2000000")
-    const txInputsBuilder = CardanoWasm.TxInputsBuilder.new()
+    let hexInputUtxos = await cardanoApi.getUtxos("2000000");
+    const txInputsBuilder = CardanoWasm.TxInputsBuilder.new();
     for (let i = 0; i < hexInputUtxos.length; i++) {
-      const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(hexToBytes(hexInputUtxos[i]))
-      txInputsBuilder.add_input(wasmUtxo.output().address(), wasmUtxo.input(), wasmUtxo.output().amount())
+      const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(
+        hexToBytes(hexInputUtxos[i])
+      );
+      txInputsBuilder.add_input(
+        wasmUtxo.output().address(),
+        wasmUtxo.input(),
+        wasmUtxo.output().amount()
+      );
     }
-    txBuilder.set_inputs(txInputsBuilder)
+    txBuilder.set_inputs(txInputsBuilder);
 
     const shelleyOutputAddress =
       CardanoWasm.Address.from_bech32(SEND_TO_ADDRESS);
@@ -500,8 +501,10 @@ signTx.addEventListener("click", async () => {
     txBuilder.set_ttl(ttl);
 
     // calculate the min fee required and send any change to an address
-    const hexChangeAddress = await cardanoApi.getChangeAddress()
-    const shelleyChangeAddress = CardanoWasm.Address.from_bytes(hexToBytes(hexChangeAddress));
+    const hexChangeAddress = await cardanoApi.getChangeAddress();
+    const shelleyChangeAddress = CardanoWasm.Address.from_bytes(
+      hexToBytes(hexChangeAddress)
+    );
     txBuilder.add_change_if_needed(shelleyChangeAddress);
 
     unsignedTransactionHex = bytesToHex(txBuilder.build_tx().to_bytes());
@@ -556,7 +559,7 @@ signTx.addEventListener("click", async () => {
 
       unsignedTransactionHex = null;
       alertSuccess("Signing tx succeeded: " + transactionHex);
-      setSignedTxAlerts("Send Tx", transactionHex)
+      setSignedTxAlerts("Send Tx", transactionHex);
     })
     .catch((error) => {
       console.error(error);
@@ -699,7 +702,7 @@ createTx.addEventListener("click", () => {
     });
   }
 
-  cardanoApi.experimental
+  cardanoApi
     .createTx(txReq, true)
     .then((txHex) => {
       toggleSpinner("hide");
@@ -728,8 +731,8 @@ getCollateralUtxos.addEventListener("click", () => {
       let utxos = isCBOR() ? mapCborUtxos(utxosResponse) : utxosResponse;
       alertSuccess(
         `<h2>Collateral UTxO (${utxos.length}):</h2><pre>` +
-        JSON.stringify(utxos, undefined, 2) +
-        "</pre>"
+          JSON.stringify(utxos, undefined, 2) +
+          "</pre>"
       );
     })
     .catch((error) => {
@@ -786,7 +789,7 @@ signData.addEventListener("click", () => {
     });
 });
 
-mintNFT.addEventListener('click', async () => {
+mintNFT.addEventListener("click", async () => {
   const NFTIndex = 1;
   toggleSpinner("show");
 
@@ -795,22 +798,32 @@ mintNFT.addEventListener('click', async () => {
     return;
   }
 
-  const txBuilder = getTxBuilder()
-  const hexInputUtxos = await cardanoApi.getUtxos("2000000")
+  const txBuilder = getTxBuilder();
+  const hexInputUtxos = await cardanoApi.getUtxos("2000000");
 
   // the key hash will be needed for our policy id
-  let wasmKeyHash
+  let wasmKeyHash;
 
   // add utxos for amount
-  const txInputsBuilder = CardanoWasm.TxInputsBuilder.new()
+  const txInputsBuilder = CardanoWasm.TxInputsBuilder.new();
   for (let i = 0; i < hexInputUtxos.length; i++) {
-    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(hexToBytes(hexInputUtxos[i]))
-    txInputsBuilder.add_input(wasmUtxo.output().address(), wasmUtxo.input(), wasmUtxo.output().amount())
+    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(
+      hexToBytes(hexInputUtxos[i])
+    );
+    txInputsBuilder.add_input(
+      wasmUtxo.output().address(),
+      wasmUtxo.input(),
+      wasmUtxo.output().amount()
+    );
     if (i == 0) {
-      wasmKeyHash = CardanoWasm.BaseAddress.from_address(wasmUtxo.output().address()).payment_cred().to_keyhash()
+      wasmKeyHash = CardanoWasm.BaseAddress.from_address(
+        wasmUtxo.output().address()
+      )
+        .payment_cred()
+        .to_keyhash();
     }
   }
-  txBuilder.set_inputs(txInputsBuilder)
+  txBuilder.set_inputs(txInputsBuilder);
 
   // Add the keyhash script to ensure the NFT can only be minted by the corresponding wallet
   const keyHashScript = CardanoWasm.NativeScript.new_script_pubkey(
@@ -842,8 +855,10 @@ mintNFT.addEventListener('click', async () => {
     },
   };
 
-  const changeAddress = await cardanoApi.getChangeAddress()
-  const wasmChangeAddress = CardanoWasm.Address.from_bytes(hexToBytes(changeAddress))
+  const changeAddress = await cardanoApi.getChangeAddress();
+  const wasmChangeAddress = CardanoWasm.Address.from_bytes(
+    hexToBytes(changeAddress)
+  );
   let outputBuilder = CardanoWasm.TransactionOutputBuilder.new();
   outputBuilder = outputBuilder.with_address(wasmChangeAddress);
 
@@ -851,15 +866,20 @@ mintNFT.addEventListener('click', async () => {
     policyScript,
     CardanoWasm.AssetName.new(Buffer.from("NFT" + NFTIndex.toString(), "utf8")),
     CardanoWasm.Int.new_i32(1),
-    outputBuilder.next())
+    outputBuilder.next()
+  );
 
-  txBuilder.set_ttl(ttl)
-  txBuilder.add_json_metadatum(CardanoWasm.BigNum.from_str('721'), JSON.stringify(metadataObj))
-  txBuilder.add_change_if_needed(wasmChangeAddress)
+  txBuilder.set_ttl(ttl);
+  txBuilder.add_json_metadatum(
+    CardanoWasm.BigNum.from_str("721"),
+    JSON.stringify(metadataObj)
+  );
+  txBuilder.add_change_if_needed(wasmChangeAddress);
 
-  const unsignedTransactionHex = bytesToHex(txBuilder.build_tx().to_bytes())
+  const unsignedTransactionHex = bytesToHex(txBuilder.build_tx().to_bytes());
 
-  cardanoApi.signTx(unsignedTransactionHex)
+  cardanoApi
+    .signTx(unsignedTransactionHex)
     .then((witnessSetHex) => {
       const witnessSet = CardanoWasm.TransactionWitnessSet.from_bytes(
         hexToBytes(witnessSetHex)
@@ -870,20 +890,21 @@ mintNFT.addEventListener('click', async () => {
       const transaction = CardanoWasm.Transaction.new(
         tx.body(),
         witnessSet,
-        tx.auxiliary_data(),
+        tx.auxiliary_data()
       );
-      transactionHex = bytesToHex(transaction.to_bytes())
-      alertSuccess('Signing tx succeeded: ' + transactionHex)
-      setSignedTxAlerts("Mint NFT", transactionHex)
-    }).catch(error => {
-      console.error(error)
-      toggleSpinner('hide')
-      alertWarrning('Signing tx fails')
+      transactionHex = bytesToHex(transaction.to_bytes());
+      alertSuccess("Signing tx succeeded: " + transactionHex);
+      setSignedTxAlerts("Mint NFT", transactionHex);
     })
-})
+    .catch((error) => {
+      console.error(error);
+      toggleSpinner("hide");
+      alertWarrning("Signing tx fails");
+    });
+});
 
-getAssetsMetadata.addEventListener('click', async () => {
-  toggleSpinner('show')
+getAssetsMetadata.addEventListener("click", async () => {
+  toggleSpinner("show");
   if (!accountBalance) {
     alertError("Should get account balance first");
     return;
@@ -910,7 +931,7 @@ getAssetsMetadata.addEventListener('click', async () => {
     );
     const metadata =
       metadataResponse.data[
-      `${assetPolicy}.${Buffer.from(assetName, "hex").toString("utf-8")}`
+        `${assetPolicy}.${Buffer.from(assetName, "hex").toString("utf-8")}`
       ];
     if (metadata) {
       for (let i = 0; i < metadata.length; i++) {
@@ -920,39 +941,52 @@ getAssetsMetadata.addEventListener('click', async () => {
   }
   alertSuccess(
     `<h2>Assets (${metadatum.length}):</h2><pre>` +
-    JSON.stringify(metadatum, undefined, 2) +
-    "</pre>"
+      JSON.stringify(metadatum, undefined, 2) +
+      "</pre>"
   );
   toggleSpinner("hide");
 });
 
-signSendToDatumEqualsRedeemerTx.addEventListener('click', async () => {
+signSendToDatumEqualsRedeemerTx.addEventListener("click", async () => {
   if (!accessGranted) {
     alertError("Should request access first");
     return;
   }
 
-  const txBuilder = getTxBuilder()
+  const txBuilder = getTxBuilder();
 
   // get utxos selected for 2 ADA
-  let hexInputUtxos = await cardanoApi.getUtxos("2000000")
-  const txInputsBuilder = CardanoWasm.TxInputsBuilder.new()
+  let hexInputUtxos = await cardanoApi.getUtxos("2000000");
+  const txInputsBuilder = CardanoWasm.TxInputsBuilder.new();
   for (let i = 0; i < hexInputUtxos.length; i++) {
-    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(hexToBytes(hexInputUtxos[i]))
-    txInputsBuilder.add_input(wasmUtxo.output().address(), wasmUtxo.input(), wasmUtxo.output().amount())
+    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(
+      hexToBytes(hexInputUtxos[i])
+    );
+    txInputsBuilder.add_input(
+      wasmUtxo.output().address(),
+      wasmUtxo.input(),
+      wasmUtxo.output().amount()
+    );
   }
-  txBuilder.set_inputs(txInputsBuilder)
+  txBuilder.set_inputs(txInputsBuilder);
 
   // generate output with datum equal to user typed payload
-  const plutusScriptAddress = CardanoWasm.Address.from_bech32("addr_test1wpl95paxq4ym8324kgxlnseefr9rpz85962z9jhr2g08yksxa9tge");
-  const datumPayload = document.querySelector("#sign-send-to-script-payload").value;
-  let datumValue = datumPayload !== "" && !isNaN(datumPayload) ? datumPayload : "42"
-  let scriptData = CardanoWasm.PlutusData.new_integer(CardanoWasm.BigInt.from_str(datumValue));
-  const scriptDataHash = CardanoWasm.hash_plutus_data(scriptData)
+  const plutusScriptAddress = CardanoWasm.Address.from_bech32(
+    "addr_test1wpl95paxq4ym8324kgxlnseefr9rpz85962z9jhr2g08yksxa9tge"
+  );
+  const datumPayload = document.querySelector(
+    "#sign-send-to-script-payload"
+  ).value;
+  let datumValue =
+    datumPayload !== "" && !isNaN(datumPayload) ? datumPayload : "42";
+  let scriptData = CardanoWasm.PlutusData.new_integer(
+    CardanoWasm.BigInt.from_str(datumValue)
+  );
+  const scriptDataHash = CardanoWasm.hash_plutus_data(scriptData);
   const outputToScript = CardanoWasm.TransactionOutput.new(
     plutusScriptAddress,
     CardanoWasm.Value.new(CardanoWasm.BigNum.from_str("2000000"))
-  )
+  );
   outputToScript.set_data_hash(scriptDataHash);
   txBuilder.add_output(outputToScript);
 
@@ -960,13 +994,16 @@ signSendToDatumEqualsRedeemerTx.addEventListener('click', async () => {
   txBuilder.set_ttl(ttl);
 
   // calculate the min fee required and send any change to the change
-  const hexChangeAddress = await cardanoApi.getChangeAddress()
-  const shelleyChangeAddress = CardanoWasm.Address.from_bytes(hexToBytes(hexChangeAddress));
+  const hexChangeAddress = await cardanoApi.getChangeAddress();
+  const shelleyChangeAddress = CardanoWasm.Address.from_bytes(
+    hexToBytes(hexChangeAddress)
+  );
   txBuilder.add_change_if_needed(shelleyChangeAddress);
 
-  const unsignedTransactionHex = bytesToHex(txBuilder.build_tx().to_bytes())
+  const unsignedTransactionHex = bytesToHex(txBuilder.build_tx().to_bytes());
 
-  cardanoApi.signTx(unsignedTransactionHex)
+  cardanoApi
+    .signTx(unsignedTransactionHex)
     .then((witnessSetHex) => {
       const witnessSet = CardanoWasm.TransactionWitnessSet.from_bytes(
         hexToBytes(witnessSetHex)
@@ -977,33 +1014,48 @@ signSendToDatumEqualsRedeemerTx.addEventListener('click', async () => {
       const transaction = CardanoWasm.Transaction.new(
         tx.body(),
         witnessSet,
-        tx.auxiliary_data(),
+        tx.auxiliary_data()
       );
 
       // find the output that outputs to script and we will store it
       for (let i = 0; i < tx.body().outputs().len(); i++) {
-        if (tx.body().outputs().get(i).address().to_bech32() == "addr_test1wpl95paxq4ym8324kgxlnseefr9rpz85962z9jhr2g08yksxa9tge") {
-          plutusInfo.tx_index = String(i)
-          plutusInfo.amount = tx.body().outputs().get(i).amount().coin().to_str()
+        if (
+          tx.body().outputs().get(i).address().to_bech32() ==
+          "addr_test1wpl95paxq4ym8324kgxlnseefr9rpz85962z9jhr2g08yksxa9tge"
+        ) {
+          plutusInfo.tx_index = String(i);
+          plutusInfo.amount = tx
+            .body()
+            .outputs()
+            .get(i)
+            .amount()
+            .coin()
+            .to_str();
         }
       }
       // We have no backend, so we'll just store the transaction locally
-      plutusInfo.datum = scriptData
-      plutusInfo.tx_hash = Buffer.from(CardanoWasm.hash_transaction(tx.body()).to_bytes()).toString('hex')
-      plutusInfo.utxo_id = Buffer.from(CardanoWasm.hash_transaction(tx.body()).to_bytes()).toString('hex') + plutusInfo.tx_index
+      plutusInfo.datum = scriptData;
+      plutusInfo.tx_hash = Buffer.from(
+        CardanoWasm.hash_transaction(tx.body()).to_bytes()
+      ).toString("hex");
+      plutusInfo.utxo_id =
+        Buffer.from(
+          CardanoWasm.hash_transaction(tx.body()).to_bytes()
+        ).toString("hex") + plutusInfo.tx_index;
 
-      transactionHex = bytesToHex(transaction.to_bytes())
-      alertSuccess('Signing tx succeeded: ' + transactionHex)
-      setSignedTxAlerts("Send To Script", transactionHex)
-    }).catch(error => {
-      console.error(error)
-      toggleSpinner('hide')
-      alertWarrning('Signing tx fails')
+      transactionHex = bytesToHex(transaction.to_bytes());
+      alertSuccess("Signing tx succeeded: " + transactionHex);
+      setSignedTxAlerts("Send To Script", transactionHex);
     })
-})
+    .catch((error) => {
+      console.error(error);
+      toggleSpinner("hide");
+      alertWarrning("Signing tx fails");
+    });
+});
 
-signSpendDatumEqualsRedeemerTx.addEventListener('click', async () => {
-  toggleSpinner('show');
+signSpendDatumEqualsRedeemerTx.addEventListener("click", async () => {
+  toggleSpinner("show");
 
   if (!accessGranted) {
     alertError("Should request access first");
@@ -1011,67 +1063,95 @@ signSpendDatumEqualsRedeemerTx.addEventListener('click', async () => {
   }
 
   if (!plutusInfo.datum) {
-    alertError('Should first send to script')
+    alertError("Should first send to script");
     return;
   }
 
-  const txBuilder = getTxBuilder()
+  const txBuilder = getTxBuilder();
 
   // get utxos selected for 2 ADA
-  let hexInputUtxos = await cardanoApi.getUtxos("2000000")
-  const txInputsBuilder = CardanoWasm.TxInputsBuilder.new()
+  let hexInputUtxos = await cardanoApi.getUtxos("2000000");
+  const txInputsBuilder = CardanoWasm.TxInputsBuilder.new();
   for (let i = 0; i < hexInputUtxos.length; i++) {
-    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(hexToBytes(hexInputUtxos[i]))
-    txInputsBuilder.add_input(wasmUtxo.output().address(), wasmUtxo.input(), wasmUtxo.output().amount())
+    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(
+      hexToBytes(hexInputUtxos[i])
+    );
+    txInputsBuilder.add_input(
+      wasmUtxo.output().address(),
+      wasmUtxo.input(),
+      wasmUtxo.output().amount()
+    );
   }
-  txBuilder.set_inputs(txInputsBuilder)
+  txBuilder.set_inputs(txInputsBuilder);
 
   // handle collateral inputs for 2 ADA
-  let hexCollateralUtxos = await cardanoApi.getCollateral(2000000)
-  const collateralTxInputsBuilder = CardanoWasm.TxInputsBuilder.new()
+  let hexCollateralUtxos = await cardanoApi.getCollateral(2000000);
+  const collateralTxInputsBuilder = CardanoWasm.TxInputsBuilder.new();
   for (let i = 0; i < hexCollateralUtxos.length; i++) {
-    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(hexToBytes(hexCollateralUtxos[i]))
-    collateralTxInputsBuilder.add_input(wasmUtxo.output().address(), wasmUtxo.input(), wasmUtxo.output().amount())
+    const wasmUtxo = CardanoWasm.TransactionUnspentOutput.from_bytes(
+      hexToBytes(hexCollateralUtxos[i])
+    );
+    collateralTxInputsBuilder.add_input(
+      wasmUtxo.output().address(),
+      wasmUtxo.input(),
+      wasmUtxo.output().amount()
+    );
   }
-  txBuilder.set_collateral(collateralTxInputsBuilder)
+  txBuilder.set_collateral(collateralTxInputsBuilder);
 
-  const plutusScriptHEX = '586c586a0100003332223232332232322225335300a333500900800300210071350044911d646174756d20646f6573206e6f7420657175616c2072656465656d65720012350023530033357380020089309309000900091199ab9a3375e00400200c00a240022440042440024003';
+  const plutusScriptHEX =
+    "586c586a0100003332223232332232322225335300a333500900800300210071350044911d646174756d20646f6573206e6f7420657175616c2072656465656d65720012350023530033357380020089309309000900091199ab9a3375e00400200c00a240022440042440024003";
 
-  const plutusScript = CardanoWasm.PlutusScript
-    .from_bytes(hexToBytes(plutusScriptHEX));
+  const plutusScript = CardanoWasm.PlutusScript.from_bytes(
+    hexToBytes(plutusScriptHEX)
+  );
 
-  const datum = plutusInfo.datum
+  const datum = plutusInfo.datum;
 
-  const redeemerPayload = document.querySelector('#sign-redeem-from-script-payload').value;
-  let redeemerValue = redeemerPayload !== "" && !isNaN(redeemerPayload) ? redeemerPayload : "42"
-  let redeemerData = CardanoWasm.PlutusData.new_integer(CardanoWasm.BigInt.from_str(redeemerValue));
+  const redeemerPayload = document.querySelector(
+    "#sign-redeem-from-script-payload"
+  ).value;
+  let redeemerValue =
+    redeemerPayload !== "" && !isNaN(redeemerPayload) ? redeemerPayload : "42";
+  let redeemerData = CardanoWasm.PlutusData.new_integer(
+    CardanoWasm.BigInt.from_str(redeemerValue)
+  );
 
   const redeemer = CardanoWasm.Redeemer.new(
     CardanoWasm.RedeemerTag.new_spend(),
     CardanoWasm.BigNum.zero(),
     redeemerData,
     CardanoWasm.ExUnits.new(
-      CardanoWasm.BigNum.from_str('8000'),
-      CardanoWasm.BigNum.from_str('9764680'),
-    ),
+      CardanoWasm.BigNum.from_str("8000"),
+      CardanoWasm.BigNum.from_str("9764680")
+    )
   );
 
-  const plutusScriptWitness = CardanoWasm.PlutusWitness.new(plutusScript, datum, redeemer)
+  const plutusScriptWitness = CardanoWasm.PlutusWitness.new(
+    plutusScript,
+    datum,
+    redeemer
+  );
 
-  const { tx, value } = utxoJSONToTransactionInput(plutusInfo)
+  const { tx, value } = utxoJSONToTransactionInput(plutusInfo);
 
-  txBuilder.add_plutus_script_input(plutusScriptWitness, tx, value)
+  txBuilder.add_plutus_script_input(plutusScriptWitness, tx, value);
 
   // calculate the min fee required and send any change to the change
-  const hexChangeAddress = await cardanoApi.getChangeAddress()
-  const shelleyChangeAddress = CardanoWasm.Address.from_bytes(hexToBytes(hexChangeAddress));
+  const hexChangeAddress = await cardanoApi.getChangeAddress();
+  const shelleyChangeAddress = CardanoWasm.Address.from_bytes(
+    hexToBytes(hexChangeAddress)
+  );
   txBuilder.add_change_if_needed(shelleyChangeAddress);
 
   // this will automatically calculate the hashes of the script, which needs to be included in all plutus txs
-  txBuilder.calc_script_data_hash(CardanoWasm.TxBuilderConstants.plutus_default_cost_models())
+  txBuilder.calc_script_data_hash(
+    CardanoWasm.TxBuilderConstants.plutus_default_cost_models()
+  );
 
-  const unsignedTransactionHex = bytesToHex(txBuilder.build_tx().to_bytes())
-  cardanoApi.signTx(unsignedTransactionHex)
+  const unsignedTransactionHex = bytesToHex(txBuilder.build_tx().to_bytes());
+  cardanoApi
+    .signTx(unsignedTransactionHex)
     .then((witnessSetHex) => {
       const witnessSet = CardanoWasm.TransactionWitnessSet.from_bytes(
         hexToBytes(witnessSetHex)
@@ -1082,17 +1162,18 @@ signSpendDatumEqualsRedeemerTx.addEventListener('click', async () => {
       const transaction = CardanoWasm.Transaction.new(
         tx.body(),
         witnessSet,
-        tx.auxiliary_data(),
+        tx.auxiliary_data()
       );
-      transactionHex = bytesToHex(transaction.to_bytes())
-      alertSuccess('Signing tx succeeded: ' + transactionHex)
-      setSignedTxAlerts("Spend Script UTXO", transactionHex)
-    }).catch(error => {
-      console.error(error)
-      toggleSpinner('hide')
-      alertWarrning('Signing tx fails')
+      transactionHex = bytesToHex(transaction.to_bytes());
+      alertSuccess("Signing tx succeeded: " + transactionHex);
+      setSignedTxAlerts("Spend Script UTXO", transactionHex);
     })
-})
+    .catch((error) => {
+      console.error(error);
+      toggleSpinner("hide");
+      alertWarrning("Signing tx fails");
+    });
+});
 
 function getTxBuilder() {
   return CardanoWasm.TransactionBuilder.new(
@@ -1105,13 +1186,21 @@ function getTxBuilder() {
           CardanoWasm.BigNum.from_str("155381")
         )
       )
-      .coins_per_utxo_word(CardanoWasm.BigNum.from_str('34482'))
-      .pool_deposit(CardanoWasm.BigNum.from_str('500000000'))
-      .key_deposit(CardanoWasm.BigNum.from_str('2000000'))
-      .ex_unit_prices(CardanoWasm.ExUnitPrices.new(
-        CardanoWasm.UnitInterval.new(CardanoWasm.BigNum.from_str("577"), CardanoWasm.BigNum.from_str("10000")),
-        CardanoWasm.UnitInterval.new(CardanoWasm.BigNum.from_str("721"), CardanoWasm.BigNum.from_str("10000000"))
-      ))
+      .coins_per_utxo_word(CardanoWasm.BigNum.from_str("34482"))
+      .pool_deposit(CardanoWasm.BigNum.from_str("500000000"))
+      .key_deposit(CardanoWasm.BigNum.from_str("2000000"))
+      .ex_unit_prices(
+        CardanoWasm.ExUnitPrices.new(
+          CardanoWasm.UnitInterval.new(
+            CardanoWasm.BigNum.from_str("577"),
+            CardanoWasm.BigNum.from_str("10000")
+          ),
+          CardanoWasm.UnitInterval.new(
+            CardanoWasm.BigNum.from_str("721"),
+            CardanoWasm.BigNum.from_str("10000000")
+          )
+        )
+      )
       .max_value_size(5000)
       .max_tx_size(16384)
       .build()
@@ -1119,19 +1208,19 @@ function getTxBuilder() {
 }
 
 function alertError(text) {
-  toggleSpinner('hide');
-  alertEl.className = 'alert alert-danger overflow-auto'
-  alertEl.innerHTML = text
+  toggleSpinner("hide");
+  alertEl.className = "alert alert-danger overflow-auto";
+  alertEl.innerHTML = text;
 }
 
 function alertSuccess(text) {
-  alertEl.className = 'alert alert-success overflow-auto'
-  alertEl.innerHTML = text
+  alertEl.className = "alert alert-success overflow-auto";
+  alertEl.innerHTML = text;
 }
 
 function alertWarrning(text) {
-  alertEl.className = 'alert alert-warning overflow-auto'
-  alertEl.innerHTML = text
+  alertEl.className = "alert alert-warning overflow-auto";
+  alertEl.innerHTML = text;
 }
 
 function toggleSpinner(status) {
@@ -1154,8 +1243,8 @@ function toggleConnectionUI(status) {
 }
 
 function setSignedTxAlerts(txType, txHex) {
-  document.querySelector("#signed-tx-type").textContent = txType
-  document.querySelector("#signed-tx-hex").textContent = txHex
+  document.querySelector("#signed-tx-type").textContent = txType;
+  document.querySelector("#signed-tx-hex").textContent = txHex;
 }
 
 function load() {
@@ -1163,26 +1252,21 @@ function load() {
     alertError("Cardano API not found");
     wait = false;
   } else {
-    cardano.yoroi
-      .enable({ requestIdentification: true, onlySilent: true })
-      .then(
-        (api) => {
-          console.log("successful silent reconnection");
-          onApiConnectied(api);
-        },
-        (err) => {
-          if (String(err).includes("onlySilent:fail")) {
-            console.log("no silent re-connection available");
-          } else {
-            console.error(
-              "Silent reconnection failed for unknown reason!",
-              err
-            );
-          }
-          toggleSpinner("hide");
-          toggleConnectionUI("button");
+    cardano.lace.enable({ requestIdentification: true, onlySilent: true }).then(
+      (api) => {
+        console.log("successful silent reconnection");
+        onApiConnectied(api);
+      },
+      (err) => {
+        if (String(err).includes("onlySilent:fail")) {
+          console.log("no silent re-connection available");
+        } else {
+          console.error("Silent reconnection failed for unknown reason!", err);
         }
-      );
+        toggleSpinner("hide");
+        toggleConnectionUI("button");
+      }
+    );
   }
 }
 
